@@ -2,9 +2,11 @@ pipeline {
     agent any
     
     environment {
-        AWS_DEFAULT_REGION    = 'your-region' // Replace with your AWS region
+        AWS_DEFAULT_REGION    = 'us-east-1' // Replace with your AWS region
         AWS_ACCOUNT_ID        = '670004487191' // Replace with your AWS account ID
         ECR_REPO_NAME         = 'test-project-repo'
+        ECS_CLUSTER_NAME      = 'green-app-cluster'
+        ECS_SERVICE_NAME      = 'green-app-service'
     }
 
     stages {
