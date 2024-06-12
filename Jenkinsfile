@@ -24,9 +24,9 @@ pipeline {
         
         stage('Build and Push to ECR') {
             steps {
-                withCredentials([string(credentialsId: 'aws-cred', variable: 'AWS_CREDENTIALS')]) {
-                    script {
-                        // AWS CLI login to ECR
+                script {
+                    // AWS CLI login to ECR
+                    withAWS(credentials: 'aws-cred', region: AWS_DEFAULT_REGION) {
                         sh "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
                         
                         // Build Docker image
@@ -46,7 +46,9 @@ pipeline {
             steps {
                 script {
                     // AWS CLI update ECS service
-                    sh "aws ecs update-service --cluster ${ECS_CLUSTER_NAME} --service ${ECS_SERVICE_NAME} --force-new-deployment --region ${AWS_DEFAULT_REGION}"
+                    withAWS(credentials: 'aws-cred', region: AWS_DEFAULT_REGION) {
+                        sh "aws ecs update-service --cluster ${ECS_CLUSTER_NAME} --service ${ECS_SERVICE_NAME} --force-new-deployment --region ${AWS_DEFAULT_REGION}"
+                    }
                 }
             }
         }
