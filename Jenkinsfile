@@ -30,7 +30,7 @@ pipeline {
                         sh "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
                         
                         // Build Docker image
-                        sh "docker build -t ${ECR_REPO_NAME} ."
+                        sh "docker build -t ${ECR_REPO_NAME} . -f Dockerfile"
                         
                         // Tag the image
                         sh "docker tag ${ECR_REPO_NAME}:latest ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_REPO_NAME}:latest"
