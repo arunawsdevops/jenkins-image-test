@@ -18,7 +18,6 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                // Checkout code from Git
                 checkout([$class: 'GitSCM', branches: [[name: '*/*']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'jenkins-git', url: 'https://github.com/arunawsdevops/Car-web.git']]])
                 sh "ls -l"
             }
@@ -27,11 +26,13 @@ pipeline {
         stage('Build and Push to ECR') {
             steps {
                 script {
-                    // Login to ECR
+                    // AWS CLI login to ECR
                     withAWS(credentials: 'aws-cred', region: AWS_DEFAULT_REGION) {
-                        // Get Docker login command and execute
+                        // Get Docker login command
                         def ecrLogin = sh(script: "aws ecr get-login-password --region ${AWS_DEFAULT_REGION}", returnStdout: true).trim()
-                        sh "echo \${ecrLogin} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+                        
+                        // Execute Docker login
+                        sh "docker login -u AWS -p '${ecrLogin}' ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
                         
                         // Build Docker image
                         sh "docker build -t ${ECR_REPO_NAME} . -f Dockerfile"
@@ -49,7 +50,7 @@ pipeline {
         stage('Deploy to ECS') {
             steps {
                 script {
-                    // Update ECS service with new image
+                    // AWS CLI update ECS service
                     withAWS(credentials: 'aws-cred', region: AWS_DEFAULT_REGION) {
                         sh "aws ecs update-service --cluster ${ECS_CLUSTER_NAME} --service ${ECS_SERVICE_NAME} --force-new-deployment --region ${AWS_DEFAULT_REGION}"
                     }
